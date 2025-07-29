@@ -1,0 +1,468 @@
+nav {
+    background: #fff;
+    padding: 15px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.nav-ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .nav-ul {
+        display: none;
+    }
+
+    /*.col-md-4 {*/
+    /*    width: 50%;*/
+    /*    text-align: center; */
+    /*}*/
+
+    /*.col-md-4:last-child {*/
+    /*    text-align: center; */
+    /*}*/
+}
+
+
+.nav-ul li {
+    position: relative;
+    padding: 5px 0;
+}
+.nav-ul li a {
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+.nav-ul li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background: #000;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+.nav-ul li:hover::after {
+    transform: scaleX(1);
+}
+.custom-btn {
+    /* background: #000; */
+    color: #cbab67;
+    border: 2px solid #cbab67;
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.5s ease;
+}
+.custom-btn:hover {
+    background: #cbab67;
+    color: #fff;
+}
+
+/* talk to expert button  */
+.talk-btn {
+    background: #cbab67;
+    color: white;
+    border: 2px solid #cbab67;
+    box-shadow: 0px 20px 30px 0px rgba(197.00000000000003, 162.0000000000001, 87.00000000000001, 0.5019607843137255);
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.5s ease;
+}
+.talk-btn:hover {
+    box-shadow: none;
+}
+
+
+/*hero section css*/
+
+.hero-img{
+    width: 100%;
+    height: 80vh !important;
+}
+
+@media (max-width: 768px){
+    .hero-img{
+        width: 100%;
+        height: auto !important;
+    }
+}
+
+/*@media (max-width: 413px){*/
+/*    .hero-img{*/
+/*        width: 100%;*/
+/*        height: 43vh !important;*/
+/*    }*/
+
+/*}*/
+
+
+/* property details css  */
+/* Property Details CSS */
+.prop_details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
+}
+
+.property-details1 {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .prop_details_desk {
+        display: none !important;
+    }
+    .property-details1 {
+        display: flex !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+
+    .property-details1 h4 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+
+    .property-details1 p {
+        font-size: 14px;
+        color: #767a7f;
+    }
+}
+
+.prop_details li {
+    position: relative;
+    padding: 0 15px; /* Add spacing on both sides of each item */
+    border-right: 1px solid #ECE4E4;
+}
+
+.prop_details li p{
+    color: #767a7f;
+}
+
+/* about property */
+.about-text{
+    text-align: justify;
+    font-size: 19px;
+}
+
+/* property image css */
+.pro-img {
+    overflow: hidden; /* Ensures the image stays inside the div */
+    border-radius: 12px;
+    display: flex; /* Prevents unwanted scaling */
+    align-items: center;
+    justify-content: center;
+}
+
+.pro-img img {
+    height: 40vh;
+    width: 100%;
+    border-radius: 12px;
+    transition: transform 0.5s ease-in-out;
+    display: block;
+    object-fit: cover; /* Ensures the image maintains aspect ratio */
+}
+
+.pro-img:hover img {
+    transform: scale(1.1); /* Zooms only the image, not the div */
+    filter: brightness(0.8); 
+}
+
+/* contact form css */
+.contact_img{
+    /*background-image: linear-gradient(180deg, #EBD197 0%, #B48811 100%);*/
+    border-radius: 11px;
+}
+
+.contact{
+    background-color: #FDFCFA;
+}
+
+.card{
+    border-radius: 13px !important;
+}
+
+/* similar project css */
+.similar_projects {
+    overflow: hidden; /* Ensures the image stays inside the div */
+    border-radius: 12px;
+    display: flex; /* Prevents unwanted scaling */
+    align-items: center;
+    justify-content: center;
+}
+
+.similar_projects img {
+    height: 25vh;
+    width: 100%;
+    border-radius: 12px;
+    transition: transform 0.5s ease-in-out;
+    display: block;
+    object-fit: cover; /* Ensures the image maintains aspect ratio */
+}
+
+.similar_projects:hover img {
+    transform: scale(1.1); /* Zooms only the image, not the div */
+    filter: brightness(0.8); 
+}
+
+/* key features */
+.key{
+    background-color: #c5a257 !important;
+}
+
+/* footer */
+footer{
+    /* background-image: url(../image/building-2.webp);
+    background-position: center left;
+    background-repeat: no-repeat;
+    background-size: auto; */
+    background-color: #f6f6f6;
+}
+
+.footer_head{
+    color: #cbab67;
+}
+
+.social_icons a{
+    background: #cbab67;
+    color: white;
+    padding: 7px;
+    border-radius: 50%;
+    text-decoration: none;
+}
+
+/* key features icon size */
+.key_icon{
+    font-size: 60px;
+}
+
+
+.similar_projects:nth-child(2) .key_feature {
+    background-color: #b78c18; 
+}
+
+
+
+/* contact images media */
+@media (max-width: 1200px){
+    .contact_image{
+        height: 52vh;
+    }
+    .contact_text{
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 992px){
+    .contact_image{
+        height: 52vh;
+    }
+    .contact_text{
+        font-size: 22px;
+    }
+}
+
+
+
+@media (max-width: 413px){
+    .contact_image{
+        height: 33vh;
+    }
+    .contact_text{
+        font-size: 22px;
+    }
+}
+
+/* Video Card Styling */
+/* Center Video Section */
+.video-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    padding: 20px;
+}
+
+/* Video Container */
+.video-container {
+    position: relative;
+    width: 80%; /* Adjust width for responsiveness */
+    max-width: 800px; /* Limit maximum width */
+    aspect-ratio: 16 / 9; /* Maintain video aspect ratio */
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Responsive Iframe */
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Video Title */
+.card-title {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .video-container {
+        width: 90%;
+    }
+}
+
+@media (max-width: 576px) {
+    .video-container {
+        width: 100%;
+    }
+}
+
+
+
+/*gov details section css*/
+
+.gov-details{
+    background-color: #fffdf8;
+}
+
+
+
+.desktop-section{
+    display: block;
+}
+
+.mob-section{
+    display: none;
+}
+
+
+/*css for property-details section on mobile view */
+
+@media (max-width: 768px){
+    .desktop-section{
+        display: none;
+    }
+    
+    .mob-section{
+        display: block;
+        background: white;
+        position: relative;
+        top: -22px;
+        border-radius: 27px 27px 1px 1px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .about-text-mob {
+        text-align: justify;
+        font-size: 23px;
+        font-weight: 500;
+    }
+    
+    .launching-tag-mob{
+        font-size: 25px;
+    }
+    
+    .about-des-mob{
+        text-align: justify;
+        font-size: 18px;
+    }
+    
+    .property-details{
+        background-color: #F6F7F7;
+    }
+    
+    .prop-box{
+        border-right: 1px solid #e3e3e3;
+    }
+    
+    .talk-btn-mob{
+        width: 100%;
+        text-align: center;
+    }
+    
+    .custom-btn-mob {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .custom-btn-mobile{
+        padding: 0px 4px;
+    }
+}
+
+@media (max-width: 413px){
+    .about-text-mob {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 361px){
+    .about-text-mob {
+        font-size: 16px;
+    }
+}
+
+
+@media (max-width: 768px){
+    .prop_details_dk{
+        display: none;
+    }
+}
+
+
+
+/* Ensure Dots Are Always Visible */
+.owl-theme .owl-dots {
+    text-align: center !important;
+    margin-top: 15px;
+}
+
+.owl-theme .owl-dots .owl-dot span {
+    background: #000 !important;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    margin: 5px;
+    border-radius: 50%;
+}
+
+/* Force Dots Visibility */
+.plan-carousel .owl-dots {
+    display: block !important;
+    position: relative;
+    bottom: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+

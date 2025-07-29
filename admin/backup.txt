@@ -1,0 +1,508 @@
+****** property_add.php ******
+
+<?php 
+include 'session_check.php';
+include 'header.php';
+include 'includes/db_conn.php';
+
+
+// Get ID from URL
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$action = isset($_GET['action']) ? $_GET['action'] : "";
+
+// Fetch existing data if ID is present
+$existingData = [];
+if ($id > 0) {
+    $sql = "SELECT * FROM projects WHERE id = $id";
+    $result = $conn->query($sql);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $existingData['property_details'] = json_decode($row['property_details'], true) ?? [];
+        $existingData['property_images'] = json_decode($row['property_images'], true) ?? [];
+        $existingData['urban_infra'] = json_decode($row['urban_infra'], true) ?? [];
+    }
+}
+
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $id > 0) {
+    // Append new property details
+    if (!empty($_POST['prop_title'])) {
+        foreach ($_POST['prop_title'] as $key => $title) {
+            $existingData['property_details'][] = [
+                'title' => $title,
+                'description' => $_POST['prop_description'][$key]
+            ];
+        }
+    }
+
+    // Append new images
+    $uploadDir = 'uploads/';
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    if (!empty($_FILES['property_images'])) {
+        foreach ($_FILES['property_images']['tmp_name'] as $key => $tmp_name) {
+            $fileName = basename($_FILES['property_images']['name'][$key]);
+            $filePath = $uploadDir . $fileName;
+
+            if (move_uploaded_file($tmp_name, $filePath)) {
+                $existingData['property_images'][] = $filePath;
+            }
+        }
+    }
+
+    // Append new urban infrastructure details
+    if (!empty($_POST['infra_title'])) {
+        foreach ($_POST['infra_title'] as $key => $title) {
+            $existingData['urban_infra'][] = [
+                'title' => $title,
+                'description' => $_POST['infra_description'][$key]
+            ];
+        }
+    }
+
+    // Convert updated data to JSON
+    $propertyDetailsJSON = json_encode($existingData['property_details']);
+    $propertyImagesJSON = json_encode($existingData['property_images']);
+    $urbanInfraJSON = json_encode($existingData['urban_infra']);
+
+    // Update the database record
+    $stmt = $conn->prepare("UPDATE projects SET property_details = ?, property_images = ?, urban_infra = ? WHERE id = ?");
+    $stmt->bind_param("sssi", $propertyDetailsJSON, $propertyImagesJSON, $urbanInfraJSON, $id);
+
+    if ($stmt->execute()) {
+        echo "Data updated successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
+$conn->close();
+?>
+
+
+<div class="app-main__inner">
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-car icon-gradient bg-mean-fruit"></i>
+                </div>
+                <div>
+                    Property
+                    <div class="page-title-subheading">
+                        <a href="index">Dashboard</a> /
+                        <a href="property">Property</a> /
+                        <a href="">Property Add</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="container">
+
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+        <form method="POST" enctype="multipart/form-data" id="multiStepForm">
+            <!-- Step 1: Property Details -->
+            <div class="step" id="step1">
+
+                <h3>Property Details :</h3>
+
+                <div id="dynamicFields">
+                    <div class="row mb-2">
+                        <div class="col-md-5">
+                            <input type="text" name="prop_title[]" class="form-control" placeholder="Enter Title (h4)" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" name="prop_description[]" class="form-control" placeholder="Enter Description (p)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger" onclick="removeField(this)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-info mt-2" onclick="addField()">Add More</button>
+
+                <div class="pt-5">
+                    <button type="button" class="btn btn-success" onclick="nextStep(2)">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 2: About Property -->
+            <div class="step" id="step2" style="display: none;">
+
+                <h3>About Property :</h3>
+
+                <div class="mb-3">
+                    <label class="form-label"> Property Name :</label>
+                    <input type="text" class="form-control" name="prop_name" placeholder="Enter Property Name" required>
+                </div>
+
+                <label class="form-label"> Property Title :</label>
+                <div id="froala-editor"> </div>
+
+                <label class="form-label"> Property Description :</label>
+                <div id="froala-editor"> </div>
+
+                <div id="dynamicProperty">
+                    <div class="row mb-2">
+                        <label class="form-label"> Property Details :</label>
+                        <div class="col-md-5">
+                            <input type="text" name="prop_datails[]" class="form-control" placeholder="Enter Title (h4)" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" name="prop_details_describ[]" class="form-control" placeholder="Enter Description (p)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger" onclick="removeProperty(this)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-info mt-2" onclick="addProperty()">Add More</button>
+
+                <div class="mb-3">
+                    <label class="form-label"> Brochure :</label>
+                    <input type="file" class="form-control" name="brochure" placeholder="Enter Property Name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"> Discount line :</label>
+                    <input type="text" class="form-control" name="discount_line" placeholder="Enter Discount line" required>
+                </div>
+
+                
+
+                <button type="button" class="btn btn-secondary" onclick="nextStep(1)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(3)">Next</button>
+            </div>
+
+            <!-- Step 3: Property Image -->
+            <div class="step" id="step3" style="display: none;">
+
+                <h3>Property Image :</h3>
+
+                <div class="mb-3">
+                    <label class="form-label">Property Images :</label>
+                    <input type="file" class="form-control" name="property_image[]" placeholder="Enter Email" multiple required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Display Property Images :</label>
+                    <input type="file" class="form-control" name="display_image" placeholder="Enter Email" required>
+                </div>
+
+                <button type="button" class="btn btn-secondary" onclick="nextStep(2)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(4)">Next</button>
+            </div>
+
+            <!-- Step 4: Urban Infrastructure -->
+            <div class="step" id="step4" style="display: none;">
+
+            <h3>Urban Infrastructure :</h3>
+
+            <div id="dynamicInfra">
+                <div class="row mb-2">
+                        <div class="col-md-5">
+                            <input type="file" name="infra_title[]" class="form-control" placeholder="Enter Title (h4)" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" name="infra_description[]" class="form-control" placeholder="Enter Description (p)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger" onclick="removeInfra(this)">Remove</button>
+                        </div>
+                </div>
+                </div>
+                <button type="button" class="btn btn-info mt-2" onclick="addInfra()">Add More</button>
+                
+
+                <div class="pt-5">
+                    <button type="button" class="btn btn-secondary" onclick="nextStep(3)">Previous</button>
+                    <button type="button" class="btn btn-success" onclick="nextStep(5)">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 5: Property Location -->
+            <div class="step" id="step5" style="display: none;">
+
+            <h3>Property Location :</h3>
+
+                <div class="mb-3">
+                    <label class="form-label">Heading :</label>
+                    <input type="text" class="form-control" name="location_head" placeholder="Enter Address" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description :</label>
+                    <input type="text" class="form-control" name="location_descri" placeholder="Enter Address" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Google map Iframe :</label>
+                    <input type="text" class="form-control" name="location_map" placeholder="Enter Address" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(4)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(6)">Next</button>
+            </div>
+
+            <!-- Step 6: Plans Image -->
+            <div class="step" id="step6" style="display: none;">
+
+            <h3>Plans Image :</h3>
+
+                <div class="mb-3">
+                    <label class="form-label">Plans Image :</label>
+                    <input type="file" class="form-control" name="plan_image[]" placeholder="Enter City" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(5)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(7)">Next</button>
+            </div>
+
+            <!-- Step 7: About Developer Details -->
+            <div class="step" id="step7" style="display: none;">
+                <h3>About Developer Details :</h3>
+                <div class="mb-3">
+                    <label class="form-label">Heading :</label>
+                    <input type="text" class="form-control" name="dev_head" placeholder="Enter Country" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description :</label>
+                    <input type="text" class="form-control" name="dev_describ" placeholder="Enter Country" required>
+                </div>
+                <div id="dynamicDev">
+                <div class="row mb-2">
+                        <label class="form-label">Aboub Developer Count :</label>
+                        <div class="col-md-5">
+                            <input type="text" name="dev_title[]" class="form-control" placeholder="Enter Title (h4)" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" name="dev_describ[]" class="form-control" placeholder="Enter Description (p)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger" onclick="removeDev(this)">Remove</button>
+                        </div>
+                </div>
+                </div>
+                <button type="button" class="btn btn-info mt-2" onclick="addDev()">Add More</button>
+                
+                <div class="pt-5">
+                    <button type="button" class="btn btn-secondary" onclick="nextStep(6)">Previous</button>
+                    <button type="button" class="btn btn-success" onclick="nextStep(8)">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 8: Projects Materials -->
+            <div class="step" id="step8" style="display: none;">
+                <h3>Projects Materials :</h3>
+                <div class="mb-3">
+                    <label class="form-label">Image :</label>
+                    <input type="text" class="form-control" name="material_image[]" placeholder="Enter Zip Code" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Button Name :</label>
+                    <input type="text" class="form-control" name="btn_name[]" placeholder="Enter Zip Code" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Detail File :</label>
+                    <input type="file" class="form-control" name="material_file[]" placeholder="Enter Zip Code" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(7)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(9)">Next</button>
+            </div>
+
+            <!-- Step 9: Key Features -->
+            <div class="step" id="step9" style="display: none;">
+                <h3>Key Features :</h3>
+                <div class="mb-3">
+                    <label class="form-label">Icon Image :</label>
+                    <input type="file" class="form-control" name="icon_image[]" placeholder="Enter City" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Heading :</label>
+                    <input type="file" class="form-control" name="key_heading[]" placeholder="Enter City" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description :</label>
+                    <textarea class="form-control" name="key_describ[]" rows="4" placeholder="Enter Bio" required></textarea>
+                </div>
+                
+                
+                <button type="button" class="btn btn-secondary" onclick="nextStep(8)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(10)">Next</button>
+            </div>
+            
+            <!-- Step 11: Contact Details -->
+            <div class="step" id="step10" style="display: none;">
+                <h3>Contact Details :</h3>
+                <div class="mb-3">
+                    <label class="form-label">Address :</label>
+                    <input type="text" class="form-control" name="address" placeholder="Enter Your Occupation" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email :</label>
+                    <input type="text" class="form-control" name="email" placeholder="Enter Your Occupation" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contact :</label>
+                    <input type="text" class="form-control" name="contact" placeholder="Enter Your Occupation" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(9)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(11)">Next</button>
+            </div>
+
+            <!-- Step 12: Date of Birth -->
+            <div class="step" id="step11" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Date of Birth:</label>
+                    <input type="date" class="form-control" name="dob" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(10)">Previous</button>
+                <button type="button" class="btn btn-success" onclick="nextStep(12)">Next</button>
+            </div>
+
+
+            <!-- Step 10: Submit Data -->
+            <div class="step" id="step12" style="display: none;">
+                <h5>Review Your Details:</h5>
+                <p>Make sure all the information is correct before submitting.</p>
+                <button type="button" class="btn btn-secondary" onclick="nextStep(11)">Previous</button>
+                <button type="submit" name="submit" class="btn btn-success">Submit</button>
+            </div>
+
+            
+        </form>
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+    // for multiple inputs
+    function addListItem() {
+        let div = document.createElement("div");
+        div.innerHTML = '<input type="text" class="form-control mb-2" name="starting_from[]" placeholder="Enter List Item">';
+        document.getElementById("list-items").appendChild(div);
+    }
+
+    // script for form steps
+    function nextStep(step) {
+        // Hide all steps
+        const steps = document.querySelectorAll('.step');
+        steps.forEach((stepDiv) => stepDiv.style.display = 'none');
+
+        // Show the selected step
+        document.getElementById(`step${step}`).style.display = 'block';
+    }
+
+    // make more inputs for property details
+    function addField() {
+            let container = document.getElementById("dynamicFields");
+            let newField = document.createElement("div");
+            newField.classList.add("row", "mb-2");
+
+            newField.innerHTML = `
+                <div class="col-md-5">
+                    <input type="text" name="titles[]" class="form-control" placeholder="Enter Title (h4)" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="descriptions[]" class="form-control" placeholder="Enter Description (p)" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger" onclick="removeField(this)">Remove</button>
+                </div>
+            `;
+            container.appendChild(newField);
+        }
+
+        function removeField(button) {
+            button.parentElement.parentElement.remove();
+        }
+
+        // make more inputs for about property details
+    function addProperty() {
+            let container = document.getElementById("dynamicProperty");
+            let newField = document.createElement("div");
+            newField.classList.add("row", "mb-2");
+
+            newField.innerHTML = `
+                <div class="col-md-5">
+                    <input type="text" name="titles[]" class="form-control" placeholder="Enter Title (h4)" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="descriptions[]" class="form-control" placeholder="Enter Description (p)" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger" onclick="removeProperty(this)">Remove</button>
+                </div>
+            `;
+            container.appendChild(newField);
+        }
+
+        function removeProperty(button) {
+            button.parentElement.parentElement.remove();
+        }
+
+        // make more inputs for Urban Infrastructure details
+    function addInfra() {
+            let container = document.getElementById("dynamicInfra");
+            let newField = document.createElement("div");
+            newField.classList.add("row", "mb-2");
+
+            newField.innerHTML = `
+                <div class="col-md-5">
+                    <input type="file" name="titles[]" class="form-control" placeholder="Enter Title (h4)" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="descriptions[]" class="form-control" placeholder="Enter Description (p)" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger" onclick="removeInfra(this)">Remove</button>
+                </div>
+            `;
+            container.appendChild(newField);
+        }
+
+        function removeInfra(button) {
+            button.parentElement.parentElement.remove();
+        }
+
+        // make more inputs for about developer details
+    function addDev() {
+            let container = document.getElementById("dynamicDev");
+            let newField = document.createElement("div");
+            newField.classList.add("row", "mb-2");
+
+            newField.innerHTML = `
+                <div class="col-md-5">
+                    <input type="text" name="titles[]" class="form-control" placeholder="Enter Title (h4)" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="descriptions[]" class="form-control" placeholder="Enter Description (p)" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger" onclick="removeDev(this)">Remove</button>
+                </div>
+            `;
+            container.appendChild(newField);
+        }
+
+        function removeDev(button) {
+            button.parentElement.parentElement.remove();
+        }
+</script>
+
+<?php 
+include 'footer.php';
+?>
+
+
+

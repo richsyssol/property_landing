@@ -1,0 +1,26 @@
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks -MultiViews
+    RewriteEngine On
+    #RewriteBase /property/
+    
+    # Allow direct access to files/folders
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Your custom routes
+    RewriteRule ^index/([^/]+)/?$ index.php?slug=$1 [L,QSA,NC]
+    RewriteRule ^welcome/([^/]+)/?$ welcome.php?property_type=$1 [L,QSA,NC]
+    RewriteRule ^wel-come/([^/]+)/?$ wel-come.php?slug=$1 [L,QSA,NC]
+    RewriteRule ^([^/.]+)/?$ property.php?slug=$1 [L,QSA,NC]
+    
+    # Fallback to index.php
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php74” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php74 .php .php7 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit

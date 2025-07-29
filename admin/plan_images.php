@@ -1,0 +1,145 @@
+<?php 
+include 'session_check.php';
+include 'header.php';
+include 'includes/db_conn.php';
+
+
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $project_id = isset($_GET['id']) ? intval($_GET['id']) : 0; // Get project ID from URL
+
+    if ($project_id > 0) {
+        $conn->begin_transaction(); // Start transaction for data integrity
+
+        try {
+            $uploadDir = "uploads/plan_images/";
+
+            // Prepare SQL statement
+            $stmt = $conn->prepare("INSERT INTO plan_images (project_id, image_path) VALUES (?, ?)");
+
+            // Debugging: Check if SQL statement is valid
+            if (!$stmt) {
+                die("SQL Error: " . $conn->error);
+            }
+
+            // Handle multiple image uploads
+            if (!empty($_FILES['plan_image']['name'][0])) { // **Fixed the input name**
+                foreach ($_FILES['plan_image']['name'] as $key => $imageName) {
+                    $imageTmp = $_FILES['plan_image']['tmp_name'][$key];
+                    $uniqueName = time() . "_" . basename($imageName);
+                    $imagePath = $uploadDir . $uniqueName;
+
+                    if (move_uploaded_file($imageTmp, $imagePath)) {
+                        // Bind parameters
+                        $stmt->bind_param("is", $project_id, $imagePath);
+                        $stmt->execute();
+                    }
+                }
+            }
+
+            $stmt->close();
+            $conn->commit(); // Commit transaction if successful
+            echo "<script>alert('Plan Images uploaded successfully!'); window.location.href='property.php';</script>";
+        } catch (Exception $e) {
+            $conn->rollback(); // Rollback on error
+            echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
+        }
+
+        $conn->close();
+    } else {
+        echo "<script>alert('Invalid Project ID!'); window.history.back();</script>";
+    }
+}
+
+?>
+
+
+
+
+
+<div class="app-main__inner">
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div class="page-title-icon">
+                    <i class="pe-7s-car icon-gradient bg-mean-fruit"></i>
+                </div>
+                <div>
+                    Property
+                    <div class="page-title-subheading">
+                        <a href="index.php">Dashboard</a> /
+                        <a href="property.php">Property</a> /
+                        <a href="">Property Add</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="container">
+
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <form action="plan_images.php?id=<?= isset($_GET['id']) ? intval($_GET['id']) : 0 ?>" method="POST" enctype="multipart/form-data" id="multiStepForm">
+    
+        <div class="step" id="step6">
+            <h3>Plans Image :</h3>
+            <div class="mb-3">
+                <label class="form-label">Plans Image :</label>
+                <input type="file" class="form-control" name="plan_image[]" multiple required>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="step pt-5">
+            <button type="submit" name="submit" class="btn btn-success">Submit</button>
+        </div>
+
+    </form>
+
+
+
+
+
+
+
+    </div>
+
+
+
+</div>
+
+<script>
+    function addField() {
+        let container = document.getElementById("dynamicFields");
+        let newField = document.createElement("div");
+        newField.classList.add("row", "mb-2");
+
+        newField.innerHTML = `
+            <div class="col-md-5">
+                <input type="file" name="plan_images[]" class="form-control" required>
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="infra_descriptions[]" class="form-control" placeholder="Enter Description (p)" required>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger" onclick="removeField(this)">Remove</button>
+            </div>
+        `;
+        container.appendChild(newField);
+    }
+
+    function removeField(button) {
+        button.parentElement.parentElement.remove();
+    }
+</script>
+
+
+<?php 
+include 'footer.php';
+?>
