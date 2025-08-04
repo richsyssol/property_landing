@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uploadDir = "uploads/";
 
     // Initialize image paths
-    $imagePath = $logoPath = "";
+    $imagePath = $logoPath = $mobileimagepath = "";
 
     // Handle Banner Image Upload
     if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -37,18 +37,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $logoPath = $uploadDir . $logo;
         move_uploaded_file($_FILES['logo_img']['tmp_name'], $logoPath);
     }
+    
+    // Handle Logo Image Upload
+    if (!empty($_FILES['mobile_image']['name']) && $_FILES['mobile_image']['error'] === UPLOAD_ERR_OK) {
+        $mobimagepath = time() . '_' . basename($_FILES['mobile_image']['name']);
+        $mobileimagepath = $uploadDir . $mobimagepath;
+        move_uploaded_file($_FILES['mobile_image']['tmp_name'], $mobileimagepath);
+    }
 
     // Ensure at least one image is uploaded
     if (!empty($imagePath) || !empty($logoPath)) {
-        $sql = "INSERT INTO projects (name, slug, image, logo_img, developer, category) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO projects (name, slug, image, logo_img, mobile_image, developer, category) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             die("Error preparing statement: " . $conn->error);
         }
 
-        $stmt->bind_param("ssssss", $name, $slug, $imagePath, $logoPath, $developer, $category);
+        $stmt->bind_param("sssssss", $name, $slug, $imagePath, $logoPath, $mobileimagepath, $developer, $category);
 
         if ($stmt->execute()) {
             echo '<script>window.location.href = "property.php";</script>';
@@ -101,6 +108,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-3">
                 <label class="form-label">Banner Image:</label>
                 <input type="file" class="form-control" name="image" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Banner Image (for mobile view):</label>
+                <input type="file" class="form-control" name="mobile_image" required>
             </div>
 
             <div class="mb-3">

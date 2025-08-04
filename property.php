@@ -84,6 +84,7 @@ ob_start(); // Start output buffering
 <section>
     <div>
         <img src="<?php echo htmlspecialchars('/admin/'.$project['image']); ?>" class="img-fluid hero-img" alt="">
+        <img src="<?php echo htmlspecialchars('/admin/'.$project['mobile_image']); ?>" class="img-fluid mobile_img" alt="">
     </div>
 </section>
 

@@ -68,7 +68,7 @@ $property_type = $conn->real_escape_string($property_type);
 $query = "SELECT p.id, p.title, p.description, p.starting_from, p.remark, p.property_type, i.image_path 
           FROM property_list p
           LEFT JOIN property_list_images i ON p.id = i.property_id
-          WHERE p.property_type = '$property_type'
+          WHERE p.property_type = '$property_type' AND p.status = 'Active' 
           ORDER BY p.id ASC";
 
 $result = $conn->query($query);

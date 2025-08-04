@@ -39,6 +39,7 @@ include 'header.php';
                 <th scope="col">#</th>
                 <th scope="col">Logo Image</th>
                 <th scope="col">Banner Image</th>
+                <th scope="col">Banner Image(mob view)</th>
                 <th scope="col">Property Name</th>
                 <th scope="col">Developer Name</th>
                 <th scope="col">Category</th>
@@ -65,6 +66,11 @@ include 'header.php';
                         </td>
                         <td>
                             <img src="<?php echo htmlspecialchars($row['image']); ?>" 
+                                alt="Banner Image" 
+                                style="width: 50px; height: 50px;">
+                        </td>
+                        <td>
+                            <img src="<?php echo htmlspecialchars($row['mobile_image']); ?>" 
                                 alt="Banner Image" 
                                 style="width: 50px; height: 50px;">
                         </td>

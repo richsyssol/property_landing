@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
     // Initialize image paths
     $imagePath = $project['image'];
     $logoPath = $project['logo_img'];
+    $mobileimagepath = $project['mobile_image'];
 
     // Handle Banner Image Upload
     if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -45,15 +46,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         $logoPath = $uploadDir . $logo;
         move_uploaded_file($_FILES['logo_img']['tmp_name'], $logoPath);
     }
+    
+    // Handle mbile view Image Upload
+    if (!empty($_FILES['mobile_image']['name']) && $_FILES['mobile_image']['error'] === UPLOAD_ERR_OK) {
+        $mobimagepath = time() . '_' . basename($_FILES['mobile_image']['name']);
+        $mobileimagepath = $uploadDir . $mobimagepath;
+        move_uploaded_file($_FILES['mobile_image']['tmp_name'], $mobileimagepath);
+    }
 
     // Update project details
-    $sql = "UPDATE projects SET name=?, slug=?, image=?, logo_img=?, developer=?, category=? WHERE id=?";
+    $sql = "UPDATE projects SET name=?, slug=?, image=?, logo_img=?, mobile_image=?, developer=?, category=? WHERE id=?";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         die("Error preparing statement: " . $conn->error);
     }
 
-    $stmt->bind_param("ssssssi", $name, $slug, $imagePath, $logoPath, $developer, $category, $id);
+    $stmt->bind_param("sssssssi", $name, $slug, $imagePath, $logoPath, $mobileimagepath, $developer, $category, $id);
 
     if ($stmt->execute()) {
         echo '<script>window.location.href = "property.php";</script>';
@@ -104,6 +112,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
                 <label class="form-label">Banner Image:</label>
                 <input type="file" class="form-control" name="image">
                 <img src="<?php echo $project['image']; ?>" width="100" alt="Banner">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Banner Image (for mobile image):</label>
+                <input type="file" class="form-control" name="mobile_image">
+                <img src="<?php echo $project['mobile_image']; ?>" width="100" alt="Banner">
             </div>
         
             <div class="mb-3">
