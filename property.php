@@ -1,7 +1,6 @@
 <?php
-include 'header.php';
 include 'fetch_data.php';
-
+include 'header1.php';
 ob_start(); // Start output buffering
 ?>
 
@@ -82,7 +81,7 @@ ob_start(); // Start output buffering
 
 <!-- hero section -->
 <section>
-    <div>
+    <div class="herosec">
         <img src="<?php echo htmlspecialchars('/admin/'.$project['image']); ?>" class="img-fluid hero-img" alt="">
         <img src="<?php echo htmlspecialchars('/admin/'.$project['mobile_image']); ?>" class="img-fluid mobile_img" alt="">
     </div>

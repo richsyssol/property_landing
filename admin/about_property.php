@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->begin_transaction(); // Start transaction for data integrity
 
         try {
-            // Prepare data
+            // Prepare form data
             $prop_name = $_POST['prop_name'];
             $about_title = $_POST['about_title'];
             $about_description = $_POST['about_description'];
@@ -19,18 +19,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $about_sub_description = $_POST['about_sub_description'];
             $maha_rera_no = $_POST['maha_rera_no'];
 
-        
+            // Handle brochure upload
+            $brochure = '';
+            if (isset($_FILES['brochure']) && $_FILES['brochure']['error'] === 0) {
+                $uploadDir = 'uploads/brochures/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true); // Create folder if not exists
+                }
 
-            // Insert into `about_property`
-            $stmt = $conn->prepare("INSERT INTO about_property (project_id, prop_name, about_title, about_description, discount_line, prop_launching, about_sub_description,maha_rera_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("isssssss", $project_id, $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no);
+                $fileName = time() . '_' . basename($_FILES['brochure']['name']);
+                $targetFile = $uploadDir . $fileName;
 
+                if (move_uploaded_file($_FILES['brochure']['tmp_name'], $targetFile)) {
+                    $brochure = $targetFile; // Save only filename in DB
+                } else {
+                    throw new Exception("Failed to upload brochure image.");
+                }
+            }
+
+            // Insert into database
+            $stmt = $conn->prepare("INSERT INTO about_property 
+                (project_id, prop_name, about_title, about_description, discount_line, prop_launching, about_sub_description, maha_rera_no, brochure) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            $stmt->bind_param("issssssss", $project_id, $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no, $brochure);
+            
             $stmt->execute();
 
-            $conn->commit(); // Commit transaction if everything is successful
+            $conn->commit(); // Commit transaction
             echo "<script>alert('Property details added successfully!'); window.location.href='property.php';</script>";
         } catch (Exception $e) {
-            $conn->rollback(); // Rollback on error
+            $conn->rollback(); // Rollback on failure
             echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
         }
 
@@ -41,6 +60,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
+
+
 
 <div class="app-main__inner">
     <div class="app-page-title">
@@ -95,6 +117,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label class="form-label">Maha RERA NO :</label>
             <input type="text" class="form-control" name="maha_rera_no" placeholder="Enter Maha RERA NO">
         </div>
+        
+        <div class="mb-3">
+                <label class="form-label">Property QR:</label>
+                <input type="file" class="form-control" name="brochure" required>
+            </div>
 
         <div class="mb-3">
             <label class="form-label">Heading Line :</label>

@@ -1,7 +1,7 @@
 <?php
     ob_start(); // Start output buffering
     session_start(); // If you use sessions
-    include 'header.php';
+    
     include 'includes/db_conn.php';
     
     // Get the property type from the URL
@@ -101,6 +101,7 @@ while ($row = $result->fetch_assoc()) {
 // Reset array indexes
 $properties = array_values($properties);
 // include form function file
+include 'header.php';
 include "property_form.php";
 ?>
 

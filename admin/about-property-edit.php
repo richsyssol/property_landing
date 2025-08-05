@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($project_id > 0) {
         $conn->begin_transaction(); // Start transaction for data integrity
         try {
-            // Prepare data
+            // Prepare form data
             $prop_name = $_POST['prop_name'];
             $about_title = $_POST['about_title'];
             $about_description = $_POST['about_description'];
@@ -30,22 +30,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $about_sub_description = $_POST['about_sub_description'];
             $maha_rera_no = $_POST['maha_rera_no'];
 
+            // Handle brochure upload
+            $brochure = $existingData['brochure'] ?? ''; // default to existing if no new file
+            if (isset($_FILES['brochure']) && $_FILES['brochure']['error'] === 0) {
+                $uploadDir = 'uploads/brochures/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = time() . '_' . basename($_FILES['brochure']['name']);
+                $targetFile = $uploadDir . $fileName;
+
+                if (move_uploaded_file($_FILES['brochure']['tmp_name'], $targetFile)) {
+                    $brochure = $targetFile; // Store full path
+                } else {
+                    throw new Exception("Failed to upload brochure image.");
+                }
+            }
 
             if ($existingData) {
                 // Update existing entry
-                $stmt = $conn->prepare("UPDATE about_property SET prop_name=?, about_title=?, about_description=?, discount_line=?, prop_launching=?, about_sub_description=?, maha_rera_no=? WHERE project_id=?");
-                $stmt->bind_param("sssssssi", $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no, $project_id);
+                $stmt = $conn->prepare("UPDATE about_property SET prop_name=?, about_title=?, about_description=?, discount_line=?, prop_launching=?, about_sub_description=?, maha_rera_no=?, brochure=? WHERE project_id=?");
+                $stmt->bind_param("ssssssssi", $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no, $brochure, $project_id);
             } else {
                 // Insert new entry
-                $stmt = $conn->prepare("INSERT INTO about_property (project_id, prop_name, about_title, about_description, discount_line, prop_launching, about_sub_description, maha_rera_no) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("isssssss", $project_id, $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no);
+                $stmt = $conn->prepare("INSERT INTO about_property (project_id, prop_name, about_title, about_description, discount_line, prop_launching, about_sub_description, maha_rera_no, brochure) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("issssssss", $project_id, $prop_name, $about_title, $about_description, $discount_line, $prop_launching, $about_sub_description, $maha_rera_no, $brochure);
             }
 
             $stmt->execute();
-            $conn->commit(); // Commit transaction if everything is successful
+            $conn->commit(); // Commit transaction
             echo "<script>alert('Property details updated successfully!'); window.location.href='property.php';</script>";
         } catch (Exception $e) {
-            $conn->rollback(); // Rollback on error
+            $conn->rollback();
             echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
         }
 
@@ -56,6 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 
 <div class="app-main__inner">
     <div class="app-page-title">
@@ -108,6 +126,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-3">
                 <label class="form-label">Maha RERA NO :</label>
                 <input type="text" class="form-control" name="maha_rera_no" value="<?= $existingData['maha_rera_no'] ?? '' ?>">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Property QR (Brochure Image):</label>
+                <input type="file" class="form-control" name="brochure" accept="image/*">
+                <?php if (!empty($existingData['brochure'])): ?>
+                    <img src="<?php echo $existingData['brochure']; ?>" alt="Current QR" style="width:100px; margin-top:10px;">
+                <?php endif; ?>
             </div>
         
             <div class="mb-3">
